@@ -1,0 +1,15 @@
+@development-tools
+gh
+git
+gnupg2
+golang
+golangci-lint
+iproute
+jq
+man-db
+netcat
+procps-ng
+python3-pip
+ripgrep
+wget2
+which

@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -e
+
+proj_name="$(basename "${PWD}")"
+
+mkdir -p ~/.vibe
+if ! [ -e ~/.vibe/config.toml ]; then
+    touch ~/.vibe/config.toml
+fi
+
+if ! podman image exists mistral-vibe:latest; then
+    "$(dirname "${0}")/build.sh"
+fi
+
+# Create directory for additional git config if it doesn't exist
+mkdir -p ~/.config/git
+
+# Build gitconfig mount args (only if file exists)
+gitconfig_args=()
+if [ -f ~/.gitconfig ]; then
+    gitconfig_args+=(-v ~/.gitconfig:/home/vibe/.gitconfig:ro,z)
+fi
+
+# Set default agent to auto-approve if not specified
+if [[ ! "$*" == *--agent* ]]; then
+    set -- "$@" --agent auto-approve
+fi
+
+exec podman run -i -t --tz=local \
+    --name="mistral-vibe-${proj_name}" --rm \
+    --env "MISTRAL_API_KEY=${MISTRAL_API_KEY}" \
+    --env "GH_TOKEN=${GH_TOKEN}" \
+    --userns=keep-id \
+    --network=host \
+    --security-opt 'unmask=/proc/*' \
+    --security-opt label=type:container_userns_t \
+    --mount type=tmpfs,destination=/tmp/vibe \
+    -v "${PWD}:/projects/${proj_name}:z" \
+    -w "/projects/${proj_name}" \
+    "${gitconfig_args[@]}" \
+    -v ~/.config/git:/home/vibe/.config/git:ro,z \
+    -v ~/.vibe:/home/vibe/.vibe:z \
+    localhost/mistral-vibe:latest "$@"
