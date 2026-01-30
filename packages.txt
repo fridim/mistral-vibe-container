@@ -13,3 +13,4 @@ python3-pip
 ripgrep
 wget2
 which
+wl-clipboard

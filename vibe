@@ -22,6 +22,30 @@ if [ -f ~/.gitconfig ]; then
     gitconfig_args+=(-v ~/.gitconfig:/home/vibe/.gitconfig:ro,z)
 fi
 
+# Handle MISTRAL_API_KEY as podman secret
+if [ -n "${MISTRAL_API_KEY}" ]; then
+    if ! podman secret exists mistral-api-key; then
+        echo "Creating podman secret for MISTRAL_API_KEY"
+        echo -n "${MISTRAL_API_KEY}" | podman secret create mistral-api-key -
+    fi
+    secret_args+=(--secret mistral-api-key,type=env,target=MISTRAL_API_KEY)
+elif podman secret exists mistral-api-key; then
+    # Use existing secret even if env var is not set
+    secret_args+=(--secret mistral-api-key,type=env,target=MISTRAL_API_KEY)
+fi
+
+# Handle GH_TOKEN as podman secret
+if [ -n "${GH_TOKEN}" ]; then
+    if ! podman secret exists mistral-github-token; then
+        echo "Creating podman secret for GH_TOKEN"
+        echo -n "${GH_TOKEN}" | podman secret create mistral-github-token -
+    fi
+    secret_args+=(--secret mistral-github-token,type=env,target=GH_TOKEN)
+elif podman secret exists mistral-github-token; then
+    # Use existing secret even if env var is not set
+    secret_args+=(--secret mistral-github-token,type=env,target=GH_TOKEN)
+fi
+
 # Set default agent to auto-approve if not specified
 if [[ ! "$*" == *--agent* ]]; then
     set -- "$@" --agent auto-approve
@@ -29,8 +53,6 @@ fi
 
 exec podman run -i -t --tz=local \
     --name="mistral-vibe-${proj_name}" --rm \
-    --env "MISTRAL_API_KEY=${MISTRAL_API_KEY}" \
-    --env "GH_TOKEN=${GH_TOKEN}" \
     --userns=keep-id \
     --network=host \
     --security-opt 'unmask=/proc/*' \
@@ -41,4 +63,5 @@ exec podman run -i -t --tz=local \
     "${gitconfig_args[@]}" \
     -v ~/.config/git:/home/vibe/.config/git:ro,z \
     -v ~/.vibe:/home/vibe/.vibe:z \
+    "${secret_args[@]}" \
     localhost/mistral-vibe:latest "$@"

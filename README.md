@@ -10,7 +10,7 @@ Run [Mistral Vibe](https://github.com/mistralai/mistral-vibe) in a container for
 
 ## Quick Start
 
-1. **Set your Mistral API key:**
+1. **Set your Mistral API key (first time only):**
 
    ```bash
    export MISTRAL_API_KEY="your-api-key-here"
@@ -22,7 +22,16 @@ Run [Mistral Vibe](https://github.com/mistralai/mistral-vibe) in a container for
    /path/to/mistral-vibe-container/vibe
    ```
 
-   The first run will automatically build the container image.
+   The first run will automatically:
+   - Build the container image
+   - Create a podman secret for your API key
+   - Remember the key for future runs (no need to set env var again)
+
+3. **Subsequent runs (no env var needed):**
+
+   ```bash
+   /path/to/mistral-vibe-container/vibe
+   ```
 
 ## Files
 
@@ -39,8 +48,22 @@ Run [Mistral Vibe](https://github.com/mistralai/mistral-vibe) in a container for
 
 ### API Key
 
-The `MISTRAL_API_KEY` environment variable is captured as a podman secret on first run. To update it:
+The `MISTRAL_API_KEY` environment variable is automatically managed as a podman secret:
 
+- **First run with API key**: Sets up the podman secret automatically
+- **Subsequent runs**: Uses the existing secret (no need to set env var again)
+- **To update**: Remove the existing secret and provide the new key
+
+```bash
+# First time setup (or to update)
+export MISTRAL_API_KEY="your-api-key-here"
+./vibe
+
+# After first setup, just run without env var
+./vibe
+```
+
+To manually update the API key:
 ```bash
 podman secret rm mistral-api-key
 export MISTRAL_API_KEY="new-key"
@@ -49,9 +72,14 @@ export MISTRAL_API_KEY="new-key"
 
 ### GitHub Token
 
-For GitHub operations, create a secret with your token:
+GitHub tokens are also managed as podman secrets:
 
 ```bash
+# Set GitHub token
+export GH_TOKEN="ghp_your_token"
+./vibe
+
+# Or create manually
 podman secret rm mistral-github-token
 echo "ghp_your_token" | podman secret create mistral-github-token -
 ```
