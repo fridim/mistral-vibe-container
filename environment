@@ -1,2 +1,10 @@
+# Environment setup for mistral-vibe container
 PATH="${PATH}:${HOME}/.local/bin:${GOBIN:-${GOPATH:-${HOME}/go}/bin}"
 export PATH
+
+# Set default editor
+export EDITOR="vim"
+
+# Enable color output for ls and grep
+export LS_COLORS="auto"
+export GREP_COLOR="1;32"
