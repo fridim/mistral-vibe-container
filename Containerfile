@@ -18,7 +18,6 @@ RUN dnf install -y $(cat /opt/packages.txt) \
 # Create user and group
 ARG UID=1000
 ARG GID=1000
-RUN groupadd -g "${GID}" vibe || true
 RUN useradd -u "${UID}" -g "${GID}" -m vibe
 COPY sudoers /etc/sudoers.d/vibe
 
@@ -33,7 +32,7 @@ ENV PATH="/home/vibe/.local/bin:${PATH}"
 RUN uv tool install mistral-vibe
 
 ENV BASH_ENV=/home/vibe/.bash_environment
-COPY --chown=vibe:vibe environment $BASH_ENV
+COPY environment $BASH_ENV
 RUN mkdir -p /home/vibe/.config /home/vibe/.vibe
 WORKDIR /projects
 ENTRYPOINT ["/home/vibe/.local/bin/vibe"]
