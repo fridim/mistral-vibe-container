@@ -18,6 +18,7 @@ RUN dnf install -y $(cat /opt/packages.txt) \
 # Create user and group
 ARG UID=1000
 ARG GID=1000
+RUN groupadd -g "${GID}" vibe
 RUN useradd -u "${UID}" -g "${GID}" -m vibe
 COPY sudoers /etc/sudoers.d/vibe
 
