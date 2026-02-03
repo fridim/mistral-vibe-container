@@ -15,6 +15,7 @@ netcat
 procps-ng
 python3-pip
 ripgrep
+rustup
 strace
 tmux
 unzip

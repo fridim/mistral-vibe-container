@@ -1,5 +1,5 @@
 # Environment setup for mistral-vibe container
-PATH="${PATH}:${HOME}/.local/bin:${GOBIN:-${GOPATH:-${HOME}/go}/bin}"
+PATH="${PATH}:${HOME}/.local/bin:${GOBIN:-${GOPATH:-${HOME}/go}/bin}:${HOME}/.cargo/bin"
 export PATH
 
 # Set default editor

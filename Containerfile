@@ -22,12 +22,17 @@ RUN groupadd -g "${GID}" vibe
 RUN useradd -u "${UID}" -g "${GID}" -m vibe
 COPY sudoers /etc/sudoers.d/vibe
 
-# Switch to vibe user for tool installation
+# Install Rust toolchain using rustup
+USER root
+RUN su - vibe -c "rustup-init -y --default-toolchain stable --profile default" \
+    && su - vibe -c "source /home/vibe/.cargo/env && rustup component add rustfmt clippy"
 USER ${UID}:${GID}
 
 # Install uv (modern Python package manager)
+
+# Install uv (modern Python package manager)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/home/vibe/.local/bin:${PATH}"
+ENV PATH="/home/vibe/.local/bin:/home/vibe/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin:${PATH}"
 
 # Install mistral-vibe using uv
 RUN uv tool install mistral-vibe
